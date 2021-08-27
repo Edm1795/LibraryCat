@@ -26,6 +26,10 @@ import ssl
 
 
 
+###### Fundamental program flow ##########
+# The root is looping inside of the mainwindow class. The Mainwindow init contains a call to the bindings() method (this is continually called)
+# Bindings() in turn calls self.getSearchTerms() which checks if the input in the interface has had the enter key pressed
+
 
 class MainWindow:
     def __init__(self,master):
@@ -33,215 +37,210 @@ class MainWindow:
         self.frame = ttk.Frame(master)
         self.label = ttk.Label(self.frame, text = "Search:")
         self.label.grid(row='0',column = 0)
-
         self.frame.pack()
         self.frame.config(height=100, width=500)
         self.frame.config(relief = RIDGE)
-
         self.entry = ttk.Entry(self.frame,width = '50')
         self.entry.grid(row='0',column = 1)
         self.bindings(master)
 
         self.frameTwo = ttk.Frame(master)
         self.frameTwo.pack()
-        self.frameTwo.config(height=400, width=800)
+        self.frameTwo.config(height=300, width=500)
         self.frameTwo.config(relief=RIDGE)
 
         # sizing is measured by characters not pixels
         self.text = Text(self.frameTwo, height=25, width=100)
         self.text.pack()
-        self.text.config(wrap = 'word')
-        # self.text.insert(1.0, self.searchResults)
+        self.text.config(wrap='word')
+        self.text.insert(1.0, '')
 
     def bindings(self,master):
         self.entry.bind('<Return>', lambda event: self.getSearchTerms())
     def getSearchTerms(self):
         searchTerms =  self.entry.get()
+        self.results = mainProgram(searchTerms)
+        print(self.results)
+        self.updateResults(self.results)
+    def updateResults(self,results):
+        self.text.insert(1.0, results)
 
+def mainProgram(searchTerms):
+    # ignore ssl cert errors
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
 
+    # Problem: getting access to the search function inside the website
+    # Answer: Make function which adjusts the url itself (rather than accessing the search field
+    # needed for making a search. Eg: "https://epl.bibliocommons.com/v2/search?query=plato"
 
+    def getSearchTerms():
 
-        # ignore ssl cert errors
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
+        searchTerms = input('Search: ')
+        return searchTerms
 
-        # Problem: getting access to the search function inside the website
-        # Answer: Make function which adjusts the url itself (rather than accessing the search field
-        # needed for making a search. Eg: "https://epl.bibliocommons.com/v2/search?query=plato"
+    def twoSearchTerms(searchTerms):
+        # determines if multiple search terms were inputted
 
-        # This function is no longer needed, it was used for getting search terms from the console's input.
-        # def getSearchTerms():
-        #
-        #     searchTerms = input('Search: ')
-        #     return searchTerms
+        # if more than one search term, return true
+        # if one search term only, return false
+        if len(searchTerms.strip().split(' ')) > 1:
+            return True
+        else:
+            return False
 
-        def twoSearchTerms(searchTerms):
-            # determines if multiple search terms were inputted
-            # if more than one search term, return true
-            # if one search term only, return false
-            if len(searchTerms.strip().split(' ')) > 1:
-                return True
+    def listOfSearchTerms(searchTerms):
+        return searchTerms.split(' ')
+
+    def performSearch(searchTerms):
+
+        '''This function composes the correct url command for any number of search terms given
+           inputs: searchTerms in raw string format
+           outputs: html of whole website for the given search terms
+        '''
+
+        # convert all search terms to list form
+        termsList = listOfSearchTerms(searchTerms)
+        # base url without any search terms added
+        url = 'https://epl.bibliocommons.com/v2/search?query='
+
+        # if only one search term is given, take base url + search term
+        # if multiple search terms given take base url + 1st search term, then add following
+        # search terms with %20 preceding them until all terms have been added
+        if twoSearchTerms == False:
+            url = url + termsList[0]
+            return url
+        else:
+            url = url + termsList[0]
+            c = 1
+            while c < len(termsList):
+                url = url + '%20' + termsList[c]
+                c += 1
+
+        html = urllib.request.urlopen(url, context=ctx).read()
+        return html
+
+    def parseHTML(html):
+
+        cleanhtml = BeautifulSoup(html, 'html.parser')
+
+        return cleanhtml
+
+    def getJsonData(cleanhtml):
+
+        #### Use .find() with arguments to pinpoint tags: cleanhtml.find(type="application/json") ####
+        jsonData = cleanhtml.find(type="application/json")  # .contents gets only contents, however it is in a list
+        return jsonData
+
+    # Need to remove the "<script>" tags, try .text (doesn't seem to work) also try extract().
+    # extracts front and end script tags
+    # data from cleanhtml begins thus: <script data-iso-key="_0" type="application/json">{"app":{"coreAssets":{"cdnHost":....
+    # note the <script.... html tag at beginning (and end, not shown) which needs to be removed
+    def remove_tags(data):
+
+        for items in data:
+            # Remove tags
+            return items.extract()
+
+            # cut out first key of dataDict (which contains no needed info) and give only the 'entities' key which
+
+    # contains the items needed.
+    # Output: dictionary of entities.
+    # not a highly neccessary step in the program
+
+    def accessEntitiesKey(dictionary):
+        for (k, v) in dictionary.items():
+            if k == 'entities':  # enter "entities" key
+                entities = {k: v}
+        return entities
+
+    # searches through all keys of the dictionary by type
+    def recursive_items(dictionary):
+        for key, value in dictionary.items():
+            if type(value) is dict:
+                yield (key, value)
+                yield from recursive_items(value)
             else:
-                return False
+                yield (key, value)
 
-        def listOfSearchTerms(searchTerms):
-            return searchTerms.split(' ')
+    # Fixed boolean condition suite with (form...or...)
+    def storeData(form, author, title, subtitle, description):
 
-        def performSearch(searchTerms):
+        '''
+        This function  checks if all desired data items have been filled then returns a list of all those items.
+        Inputs: string of: form,author,title,subtitle,description
+        Outputs: if all and only all desired items are present it returns a list of those items; if all items are not present (if empty or missing anything,
+         it returns an empty list []
+        '''
+        # note: if the format (ie form) is not one of the types checked for this will throw off the proper correspondance  between  the data points.
+        #  A book title will not correspond to the correct author and so on.
+        if author != 1 and title != 1 and subtitle != 1 and description != 1 and (
+                form == 'VIDEO_ONLINE' or form == 'BK' or form == 'GRAPHIC_NOVEL' or form == 'EBOOK' or form == 'MUSIC_ONLINE' or form == 'MUSIC_CD' or form == 'BLURAY' or form == 'DVD' or form == 'DIGITAL_SCORE' or form == 'AB_ONLINE' or form == 'BOOK_CD'):
+            return [form, author, title, subtitle]
+        else:
+            return []
 
-            '''This function composes the correct url command for any number of search terms given.
-               Inputs: searchTerms in raw string format
-               Outputs: html of whole website for the given search terms
-            '''
+    def getBooks(materials):
 
-            # convert all search terms to list form
-            termsList = listOfSearchTerms(searchTerms)
-            # base url without any search terms added
-            url = 'https://epl.bibliocommons.com/v2/search?query='
+        if materials[0] == 'BK':
+            return materials
 
-            # if only one search term is given, take base url + search term
-            # if multiple search terms given take base url + 1st search term, then add following
-            # search terms with %20 preceding them until all terms have been added
-            if twoSearchTerms == False:
-                url = url + termsList[0]
-                return url
-            else:
-                url = url + termsList[0]
-                c = 1
-                while c < len(termsList):
-                    url = url + '%20' + termsList[c]
-                    c += 1
+    def getCDs(materials):
 
-            html = urllib.request.urlopen(url, context=ctx).read()
-            return html
+        if materials[0] == 'MUSIC_CD':
+            return materials
 
-        def parseHTML(html):
+    def getEbooks(materials):
 
-            cleanhtml = BeautifulSoup(html, 'html.parser')
+        if materials[0] == 'EBOOK':
+            return materials
 
-            return cleanhtml
+    def getGraphicNovels(materials):
 
-        def getJsonData(cleanhtml):
+        if materials[0] == 'GRAPHIC_NOVEL':
+            return materials
 
-            #### Use .find() with arguments to pinpoint tags: cleanhtml.find(type="application/json") ####
-            jsonData = cleanhtml.find(type="application/json")  # .contents gets only contents, however it is in a list
-            return jsonData
+    def getVideos(materials):
 
-        # Need to remove the "<script>" tags, try .text (doesn't seem to work) also try extract().
-        # extracts front and end script tags
-        # data from cleanhtml begins thus: <script data-iso-key="_0" type="application/json">{"app":{"coreAssets":{"cdnHost":....
-        # note the <script.... html tag at beginning (and end, not shown) which needs to be removed
-        def remove_tags(data):
+        if materials[0] == 'VIDEO_ONLINE':
+            return materials
 
-            for items in data:
-                # Remove tags
-                return items.extract()
+    def getDVDs(materials):
 
-                # cut out first key of dataDict (which contains no needed info) and give only the 'entities' key which
+        if materials[0] == 'DVD':
+            return materials
 
-        # contains the items needed.
-        # Output: dictionary of entities.
-        # not a highly neccessary step in the program
+    def getBlurays(materials):
 
-        def accessEntitiesKey(dictionary):
-            for (k, v) in dictionary.items():
-                if k == 'entities':  # enter "entities" key
-                    entities = {k: v}
-            return entities
+        if materials[0] == 'BLURAY':
+            return materials
 
-        # searches through all keys of the dictionary by type
-        def recursive_items(dictionary):
-            for key, value in dictionary.items():
-                if type(value) is dict:
-                    yield (key, value)
-                    yield from recursive_items(value)
-                else:
-                    yield (key, value)
-
-        # Fixed boolean condition suite with (form...or...)
-        def storeData(form, author, title, subtitle, description):
-
-            '''
-            This function  checks if all desired data items have been filled then returns a list of all those items.
-            Inputs: string of: form,author,title,subtitle,description
-            Outputs: if all and only all desired items are present it returns a list of those items; if all items are not present (if empty or missing anything)
-             it returns an empty list [].
-            '''
-            # note: if the format (ie form) is not one of the types checked for this will throw off the proper correspondance  between  the data points.
-            #  A book title will not correspond to the correct author and so on.
-            if author != 1 and title != 1 and subtitle != 1 and description != 1 and (
-                    form == 'VIDEO_ONLINE' or form == 'BK' or form == 'GRAPHIC_NOVEL' or form == 'EBOOK' or form == 'MUSIC_ONLINE' or form == 'MUSIC_CD' or form == 'BLURAY' or form == 'DVD' or form == 'DIGITAL_SCORE' or form == 'AB_ONLINE' or form == 'BOOK_CD'):
-                return [form, author, title, subtitle]
-
-            elif form != 1 and (
-                    form != 'VIDEO_ONLINE' or form != 'BK' or form != 'GRAPHIC_NOVEL' or form != 'EBOOK' or form != 'MUSIC_ONLINE' or form != 'MUSIC_CD' or form != 'BLURAY' or form != 'DVD' or form != 'DIGITAL_SCORE' or form != 'AB_ONLINE' or form != 'BOOK_CD') and author != 1 and title != 1 and subtitle != 1 and description != 1:
-                return [form, author, title,subtitle]
-                # This additional clause handles cases when an unknown format is found(something other than all those listed in the 'if' clause). In such a case, if all fields are full (including an unknown format) a list will still be returned with those items. It will not neccessarily get printed off however (depending on the settings in the print function. This should ensure a proper correspondance between data fields even when unknown formats exist in the raw data
-
-            else:
-                return []
-
-        def getBooks(materials):
-
-            if materials[0] == 'BK':
-                return materials
-
-        def getCDs(materials):
-
-            if materials[0] == 'MUSIC_CD':
-                return materials
-
-        def getEbooks(materials):
-
-            if materials[0] == 'EBOOK':
-                return materials
-
-        def getGraphicNovels(materials):
-
-            if materials[0] == 'GRAPHIC_NOVEL':
-                return materials
-
-        def getVideos(materials):
-
-            if materials[0] == 'VIDEO_ONLINE':
-                return materials
-
-        def getDVDs(materials):
-
-            if materials[0] == 'DVD':
-                return materials
-
-        def getBlurays(materials):
-
-            if materials[0] == 'BLURAY':
-                return materials
-
-        def printResults(books, videos, eBooks, DVDs, blurays, CDs, graphicNovels):
-            for item in books:
-                print(item)
-            print()
-            for item in videos:
-                print(item)
-            print()
-            for item in eBooks:
-                print(item)
-            print()
-            for item in DVDs:
-                print(item)
-            print()
-            for item in blurays:
-                print(item)
-            print()
-            for item in graphicNovels:
-                print(item)
-            print()
-            for item in CDs:
-                print(item)
-
-        # ################ Program Processes Start Here  #######################
-        #searchTerms = getSearchTerms()
+    def printResults(books, videos, eBooks, DVDs, blurays, CDs, graphicNovels):
+        for item in books:
+            print(item)
         print()
+        for item in videos:
+            print(item)
+        print()
+        for item in eBooks:
+            print(item)
+        print()
+        for item in DVDs:
+            print(item)
+        print()
+        for item in blurays:
+            print(item)
+        print()
+        for item in graphicNovels:
+            print(item)
+        print()
+        for item in CDs:
+            print(item)
+
+    def programFlow(searchTerms):
+
+
         getHTML = performSearch(searchTerms)
 
         print('accessing website\n')
@@ -319,8 +318,8 @@ class MainWindow:
                 if getVideos(materials) != None:
                     videos.append(getVideos(materials))
 
-                # if books != None:
-                # print(books)
+                    # if books != None:
+                    # print(books)
                 # if graphicNovels != None:
                 # print(graphicNovels)
                 # if CDs != None:
@@ -336,11 +335,11 @@ class MainWindow:
                 subtitle = 1
                 description = 1
 
-        # update the mainwindow with the results
-        self.text.insert(1.0, books)
-
-        # print to the console all the results
         printResults(books, videos, eBooks, DVDs, blurays, CDs, graphicNovels)
+        return books
+
+    # returns results of the search terms to the mainProgram()
+    return programFlow(searchTerms)
 
 
 
@@ -350,7 +349,8 @@ class MainWindow:
 def main():
 
     root = Tk()
-    MainWindow(root)
+    z = MainWindow(root)
+
     root.mainloop()
 
 main()
