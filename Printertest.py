@@ -141,7 +141,7 @@ class MainWindow:
              self.text4.insert(1.0, ' \n')
 
 d = ''' ([['BK', ['Fischer, Bobby'], 'Bobby Fischer Teaches Chess', ''], ['BK', ['Chandler, Murray'], 'How to Beat your Dad at Chess', ''], ['BK', ['Chernev, Irving'], 'Winning Chess', 'How to Perfect your Attacking Play'], ['BK', ['Levens, David'], 'Chess Basics', ''], ['BK', ['Chess, Shira'], 'Ready Player Two', 'Women Gamers and Designed Identity'], ['BK', ['Levens, David'], 'Chess Basics', '']], [['DVD', [], 'How to Play Chess', 'Lessons From An International Master']], [], [['MUSIC_CD', [], 'Chess', '']]) '''
-
+d2 = 'Results from main program and sent to interface: [([['BK', ['Robinson, Nathan J.'], 'Trump', 'Anatomy of A Monstrosity : How This Happened, What It Means, and What to Do About It'], ['BK', ['Trump, Donald'], 'Trump', 'The Art of the Deal'], ['BK', ['Scaramucci, Anthony'], 'Trump, the Blue-collar President', ''], ['BK', ['Badiou, Alain'], 'Trump', '']], [], [], []), ([['BK', ['Robinson, Nathan J.'], 'Trump', 'Anatomy of A Monstrosity : How This Happened, What It Means, and What to Do About It'], ['BK', ['Trump, Donald'], 'Trump', 'The Art of the Deal'], ['BK', ['Scaramucci, Anthony'], 'Trump, the Blue-collar President', ''], ['BK', ['Badiou, Alain'], 'Trump', '']], [], [], [])]'
 def main():
 
     root = Tk()
