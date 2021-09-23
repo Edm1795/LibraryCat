@@ -143,7 +143,7 @@ class MainWindow:
                             if x == None:  # Check if popped item is None
                                 x = ' '  # if None, replace with empty string (so as to avoid tkinter error: .insert() can not accept None values)
                             self.text1.insert(1.0, x)
-                            if x != 'BK':
+                            if x != 'BK':  # Removes space at beginning of line; only put space for all elements except the category type ie. BK.
                                 self.text1.insert(1.0, ' ')
                         self.text1.insert(1.0, ' \n')
                     elif item[0] == 'DVD':
