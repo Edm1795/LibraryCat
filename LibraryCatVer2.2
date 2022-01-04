@@ -54,10 +54,14 @@ import ssl
 # 36. add function to abbreviate the length of the description -- added characterLimit()
 
 ###### Fundamental Program Flow ##########
-# The root is looping inside of the mainwindow class. The Mainwindow init sets up the interface and contains a call to the bindings() method
-# (this is continually called). Bindings() in turn calls self.getSearchTerms()
+
+### Key Point: getSearchTerms() returns the search results as a list of classes ###
+
+# The root is looping inside of the mainwindow class. The Mainwindow init sets up the interface and contains a call
+# to the bindings() method (this is continually called). Bindings() in turn calls self.getSearchTerms()
 # which checks if the input in the interface has had the enter key pressed and takes the input terms.
-# Self.getSearchTerms() then runs the actual program (mainprogram()) with those search terms which also returns the results. Those results are then sent to the text.input of the interface and displayed.
+# Self.getSearchTerms() then runs the actual program (mainprogram()) with those search terms which also returns
+# the results. Those results are then sent to updateResults() which prints them to the screen.
 
 # Class for containing all information about a given library item, ex: a book, a dvd.
 class LibItem:
@@ -199,7 +203,7 @@ class MainWindow:
 
     def getSearchTerms(self):
 
-        # this function is central to the program's function as it gets the search terms and then runs the program with those terms:
+        # This function is central to the program's function as it gets the search terms and then runs the program with those terms:
         # 1. gets search terms
         # 2. runs program with search terms
         # 3. sends results to the screen printout function (updateResults())
