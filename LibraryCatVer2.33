@@ -241,7 +241,7 @@ class MainWindow:
         dropDownMenu.delete(0, "end")
         # newList = ['Berg','Schubert','Mozart','Graupner','Mendelssohn'] # entering a new list to the Option Menu does not update the list!
 
-        for item in self.searchTermsCache:
+        for item in self.searchTermsCache: # populate drop down menu with items stored in searchTermsCache
             dropDownMenu.add_command(label=item, command=lambda value=item: self.menu.set(value))
 
         numOfResultPages = 1 #  Number of result pages desired from main source
