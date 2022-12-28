@@ -95,6 +95,11 @@ from ctypes import windll  # used for fixing blurry fonts on win 10 and 11
 
 # 48. Ver 3.4 fixed colon in books and dvd printouts to separate between title and subtitle
 
+Ver. 3.4a
+# 49. Fixed blurry font display for win 11. 
+     Added import from ctypes import windll
+     added to MainWindow: windll.shcore.SetProcessDpiAwareness(1)
+
 
 ###### Fundamental Program Flow ##########
 
