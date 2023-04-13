@@ -88,7 +88,7 @@ f3.grid_propagate(0)
 
 f4=Frame(top2,bg='light green',height=150,width=250)
 f4.grid(row=1,column=3,sticky='nsew')
-top2.grid_columnconfigure(2,weight=1)
+top2.grid_columnconfigure(3,weight=1)
 top2.grid_rowconfigure(0,weight=1)
 f4.grid_propagate(0)
 
