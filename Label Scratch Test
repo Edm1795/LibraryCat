@@ -1,0 +1,131 @@
+from tkinter import *
+
+class WrappingLabel(Label):
+    '''a type of Label that automatically adjusts the wrap to the size'''
+    def __init__(self, master=None, **kwargs):
+        Label.__init__(self, master, **kwargs)
+        self.bind('<Configure>', lambda e: self.config(wraplength=self.winfo_width()))
+
+root = Tk()
+
+root.title('Main')
+
+top1=Toplevel()
+top1.title('top 1')
+
+top2=Toplevel()
+top2.title('top 2')
+top2.geometry('+400+400')
+
+
+# Search Bar
+f0 = Frame(top2)
+label = Label(f0, text="Search:")
+f0.grid(row=0, column=0, columnspan=4)
+label.grid(row=0, column=0)
+# self.frame.config(width=500, height=10)
+# self.frame.config(relief=RIDGE)
+entry = Entry(f0, width='20')
+entry.grid(row=0, column=1)
+
+# f0=Frame(top2,bg='green')
+# f0.grid(row=0,column=0,columnspan=3,sticky='ew')
+# sL=Label(f0,text='search')
+# # sL.pack()
+# sL.grid(row=0,column=0)
+#
+# sLent=Label(f0,text='entry')
+# # sL.pack()
+# sLent.grid(row=0,column=1)
+
+f1=Frame(top2,bg='purple',height=250,width=450)
+f1.grid(row=1,column=0,sticky='nsew')
+top2.grid_columnconfigure(0,weight=1)
+top2.grid_rowconfigure(0,weight=1)
+f1.grid_propagate(0)
+# f.pack()
+# f.pack_propagate(0) # this allows the h and w values to take effect
+
+l=Label(f1,text='Sticky for NSEW',bg='grey')
+# l.pack()
+# l.pack()#grid#(row=0,column=0)
+
+l1=Label(f1,text='h = 150 and w = 250',bg='grey')
+l1.pack()#
+# l1.grid(row=1,column=0)
+Text2='BOOK\nMilton, John\nDescription: Complete works of Milton\n\n'
+Text1='When lofty trees I see barren of leaves,Which erst from heat did canopy the herd,'
+l2=Label(f1,text=Text2
+         ,bg='grey',anchor='w',justify=LEFT,wraplength=200)
+l2.pack(side=TOP, fill=BOTH)#
+# l2.grid(row=2,column=0)
+
+l3=WrappingLabel(f1,text='When lofty trees I see barren of leaves,'
+                 'Which erst from heat did canopy the herd,'
+         ,bg='grey',anchor='w',justify=LEFT,wraplength=200)
+l3.pack(side=TOP, fill=BOTH)#
+# l3.grid(row=3,column=0)
+
+f2=Frame(top2,bg='green',height=150,width=250)
+f2.grid(row=1,column=1,sticky='nsew')
+top2.grid_columnconfigure(1,weight=1)
+top2.grid_rowconfigure(0,weight=1)
+f2.grid_propagate(0)
+
+la=Label(f2,text='Sticky for NS only',bg='grey')
+# l.pack()
+la.grid(row=0,column=0)
+
+la2=Label(f2,text='h = 150 and w = 250',bg='grey')
+# l.pack()
+la2.grid(row=0,column=0)
+
+f3=Frame(top2,bg='dark green',height=150,width=250)
+f3.grid(row=1,column=2,sticky='nsew')
+top2.grid_columnconfigure(2,weight=1)
+top2.grid_rowconfigure(0,weight=1)
+f3.grid_propagate(0)
+
+f4=Frame(top2,bg='light green',height=150,width=250)
+f4.grid(row=1,column=3,sticky='nsew')
+top2.grid_columnconfigure(2,weight=1)
+top2.grid_rowconfigure(0,weight=1)
+f4.grid_propagate(0)
+
+
+fa=Frame(root,bg='purple',height=150,width=250)
+fa.grid(row=0,column=0,sticky='ns')
+root.grid_columnconfigure(0,weight=1)
+root.grid_rowconfigure(0,weight=1)
+fa.grid_propagate(0)
+# f.pack()
+# f.pack_propagate(0) # this allows the h and w values to take effect
+
+faL=Label(fa,text='lh    ')
+faL.pack()
+
+fb=Frame(root,bg='green',height=150,width=250)
+fb.grid(row=0,column=1,sticky='ns')
+root.grid_columnconfigure(1,weight=1)
+root.grid_rowconfigure(0,weight=1)
+fb.grid_propagate(0)
+
+fc=Frame(root,bg='light green',height=150,width=250)
+fc.grid(row=0,column=2,sticky='ns')
+root.grid_columnconfigure(2,weight=1)
+root.grid_rowconfigure(0,weight=1)
+fc.grid_propagate(0)
+
+
+
+
+
+
+f1=Frame(top1)
+f1.grid(row=0,column=0,sticky='nsew')
+t=Text(f1)
+t.pack()
+l=Label(t,text='this label inside')
+l.pack()
+
+root.mainloop()
