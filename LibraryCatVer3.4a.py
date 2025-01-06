@@ -1,5 +1,5 @@
 import urllib.request, urllib.parse, urllib.error
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup #import beautifulsoup4, not beautifulsoup
 from tkinter import *
 from tkinter import ttk
 import json
