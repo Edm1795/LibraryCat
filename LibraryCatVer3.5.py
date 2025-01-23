@@ -179,7 +179,7 @@ class MainWindow:
 
         # Master Window
         self.master = master
-        self.master.title('Library Cat V. 3.4')
+        self.master.title('Library Cat V. 3.51')
         # self.master.geometry("+100+100")  # position of the window in the screen (200x300)
         # self.master.geometry("400x400")  # set size of the root window (master) (1500x700)
 
