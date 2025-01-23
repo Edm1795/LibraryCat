@@ -97,6 +97,10 @@ import ssl
 # 49. Ver. 3.5 Beginning the process of switching the output of each item to the screen to be a Label rather than text
 # This important improvement is the first step in making all text a label beginning with the Books inside the updateResults() method
 
+# 50. Ver. 3.51, added filter to grab the link to the image of the book jacket cover (or any item cover potentially?) This link is not being stored any
+# where currently, that is the next step, so far it merely prints to the screen as part of each item. This happens in the ProgramFlow function:
+#         if key == 'medium': # access the link to the image of the jacket of the book (a syndetics link)
+               
 
 ###### Fundamental Program Flow ##########
 
@@ -175,7 +179,7 @@ class MainWindow:
 
         # Master Window
         self.master = master
-        self.master.title('Library Cat V. 3.5')
+        self.master.title('Library Cat V. 3.4')
         # self.master.geometry("+100+100")  # position of the window in the screen (200x300)
         # self.master.geometry("400x400")  # set size of the root window (master) (1500x700)
 
@@ -405,12 +409,18 @@ class MainWindow:
         # including an argument directly (without lambda) in the command call will cause the function to be called automatically upon
         # creatione eg: displaySelected(searchTerm)
 
+    # mouse event functions
+    def mouseOver(self,event):
+        event.widget.config(bg="#24405b")  # Change background color on hover
+
+    def mouseOff(self,event):
+        event.widget.config(bg="#112233")  # Revert background color when not hovering
 
     def cacheHistoryofSearches(self, results):
         self.resultsCache.append(results)
 
     def updateResults(self, results):
-        
+
         for instance in results:
             if instance.getFormat() == 'BK':
                 # build the string of text stage by stage, then insert the string into a label:
@@ -433,9 +443,14 @@ class MainWindow:
 
                 posting = posting + instance.getPubDate()
                 posting = posting + '\n\n'  # puts empty line between each library item
+
                 # create a label with all of the information about the item
                 label = Label(self.frame1, text=posting, anchor='w', justify='left', font=(self.fontTuple[0],self.fontTuple[1]), fg="white",bg='#112233')
                 label.pack(side='top', fill='x') # side=top packs labels vertically; fill=x fills unused space.
+
+                label.bind("<Enter>", self.mouseOver)
+                label.bind("<Leave>", self.mouseOff)
+
             if instance.getFormat() == 'DVD':
                 self.text2.insert('end', 'DVD' + ' ')
                 self.text2.insert('end', ' ')  # insert space between element
@@ -556,6 +571,7 @@ def parseHTML(html):
 def getJsonData(cleanhtml):
     #### Use .find() with arguments to pinpoint tags: cleanhtml.find(type="application/json") ####
     jsonData = cleanhtml.find(type="application/json")  # .contents gets only contents, however it is in a list
+    # print('*************\n\nJson Data',jsonData, '\n\n**********')
     return jsonData
 
 
@@ -579,6 +595,7 @@ def accessEntitiesKey(dictionary):
     for (k, v) in dictionary.items():
         if k == 'entities':  # enter "entities" key
             entities = {k: v}
+            # print(entities)
     return entities
 
 
@@ -726,22 +743,25 @@ def programFlow(searchTerms, numOfResultPages):
 
             if key == 'authors':
                 author = value
-                print(key, value)
+                print(key+':', value)
             if key == 'title':
                 title = value
-                print(key, value, )
+                print(key+':', value, )
             if key == 'subtitle':
                 subtitle = value
-                print(key, value)
+                print(key+':', value)
             if key == 'format':
                 form = value
-                print(key, value)
+                print(key+':', value)
             if key == 'description':
                 description = value
-                print(description)
+                print("description:",description)
             if key == 'publicationDate':
                 date = value
-                # print(key, value)
+                print('pubDate:', value)
+            if key == 'medium': # access the link to the image of the jacket of the book (a syndetics link)
+                jacket = value
+                print('jacket image:',value)
 
             # checks if all values above have been filled, if all are not full, it will return an empty list
             # therefore the list will either be full of all needed values or totally empty
