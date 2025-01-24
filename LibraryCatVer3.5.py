@@ -103,6 +103,9 @@ import ssl
 
 # 51. Ver 3.511 Added image to LibItem class to hold the link to the image; added all neccessary extra arguments to the programFlow Function as well
 
+# 52. Ver. 3.52, rather major addition to LibItem Class. It now automatically runs a new method in the init (saveImage()) which calls the link of the image
+# and saves that to a variable. (This seems to slow down the search results quite noticably).
+
 ###### Fundamental Program Flow ##########
 
 ### Key Point: getSearchTerms() returns the search results as a list of classes ###
@@ -122,7 +125,10 @@ class LibItem:
         self.subtitle = subtitle
         self.description = description
         self.pubDate = date
-        self.image = image # the link to the image of the book (or item)
+        self.imageLink = image # the link, URL, to the image of the book (or item)
+        self.imgData = 0
+        self.saveImage()
+
 
     def getFormat(self):
         if self.form == None:  # check for None in attribute and replace with '' if so; avoids concatenation errors in printout
@@ -160,11 +166,29 @@ class LibItem:
         else:
             return self.pubDate
 
-    def getImage(self):
-        if self.image == None:  # check for None in attribute and replace with '' if so; avoids concatenation errors in printout
+    def getImageLink(self):
+        # returns the URL of the image for the given item
+        if self.imageLink == None:  # check for None in attribute and replace with '' if so; avoids concatenation errors in printout
             return ''
         else:
-            return self.image
+            return self.imageLink
+
+    def saveImage(self):
+        '''
+        This method which is called automatically when each LibItem class is instantiated will load the data
+        of the item's image into self.imgData for use at any needed time. It uses the imageLink to access the
+        webpage holding the iamge and then saves the data
+        '''
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        # Fetch the image
+        try: # if the item has no link connected with it, the urllib function will throw an error, therefore handle the error as a pass
+            self.imgData = urllib.request.urlopen(self.getImageLink(), context=ctx).read()
+        except:
+            pass
 
 
 # Main() --> Mainwindow --> self.bindings() method --> self.getSearchTerms() --> mainprogram() --> ProgramFlow() --> returns results to mainProgram()
@@ -187,7 +211,7 @@ class MainWindow:
 
         # Master Window
         self.master = master
-        self.master.title('Library Cat V. 3.51')
+        self.master.title('Library Cat V. 3.52')
         # self.master.geometry("+100+100")  # position of the window in the screen (200x300)
         # self.master.geometry("400x400")  # set size of the root window (master) (1500x700)
 
