@@ -100,7 +100,8 @@ import ssl
 # 50. Ver. 3.51, added filter to grab the link to the image of the book jacket cover (or any item cover potentially?) This link is not being stored any
 # where currently, that is the next step, so far it merely prints to the screen as part of each item. This happens in the ProgramFlow function:
 #         if key == 'medium': # access the link to the image of the jacket of the book (a syndetics link)
-               
+
+# 51. Ver 3.511 Added image to LibItem class to hold the link to the image; added all neccessary extra arguments to the programFlow Function as well
 
 ###### Fundamental Program Flow ##########
 
@@ -114,13 +115,14 @@ import ssl
 
 # Class for containing all information about a given library item, ex: a book, a dvd.
 class LibItem:
-    def __init__(self, form, author, title, subtitle, description, date):
+    def __init__(self, form, author, title, subtitle, description, date, image):
         self.form = form
         self.author = author
         self.title = title
         self.subtitle = subtitle
         self.description = description
         self.pubDate = date
+        self.image = image # the link to the image of the book (or item)
 
     def getFormat(self):
         if self.form == None:  # check for None in attribute and replace with '' if so; avoids concatenation errors in printout
@@ -157,6 +159,12 @@ class LibItem:
             return ''
         else:
             return self.pubDate
+
+    def getImage(self):
+        if self.image == None:  # check for None in attribute and replace with '' if so; avoids concatenation errors in printout
+            return ''
+        else:
+            return self.image
 
 
 # Main() --> Mainwindow --> self.bindings() method --> self.getSearchTerms() --> mainprogram() --> ProgramFlow() --> returns results to mainProgram()
@@ -610,7 +618,7 @@ def recursive_items(dictionary):
 
 
 # Fixed boolean condition suite with (form...or...)
-def storeData(form, author, title, subtitle, description, date):
+def storeData(form, author, title, subtitle, description, date, image):
     '''
     This function  checks if all desired data items have been filled then returns a list of all those items.
     Inputs: string of: form,author,title,subtitle,description
@@ -619,9 +627,9 @@ def storeData(form, author, title, subtitle, description, date):
     '''
     # note: if the format (i.e. 'form') is not one of the types checked for this will throw off the proper correspondance  between  the data points.
     #  A book title will not correspond to the correct author and so on.
-    if author != 1 and title != 1 and subtitle != 1 and description != 1 and date != 1 and (
+    if author != 1 and title != 1 and subtitle != 1 and description != 1 and date != 1 and image != 1 and (
             form == 'VIDEO_ONLINE' or form == 'BK' or form == 'GRAPHIC_NOVEL' or form == 'EBOOK' or form == 'MUSIC_ONLINE' or form == 'MUSIC_CD' or form == 'BLURAY' or form == 'DVD' or form == 'DIGITAL_SCORE' or form == 'AB_ONLINE' or form == 'BOOK_CD' or form == 'AB' or form == 'LPRINT'):
-        return [form, author, title, subtitle, date]
+        return [form, author, title, subtitle, date, image]
     else:
         return []
 
@@ -736,6 +744,7 @@ def programFlow(searchTerms, numOfResultPages):
         form = 1
         description = 1
         date = 1
+        image = 1
 
         # extrapolating key data fields
         # input entities-dict into recursive search of keys and values for all sub-dictionaries
@@ -760,14 +769,14 @@ def programFlow(searchTerms, numOfResultPages):
                 date = value
                 print('pubDate:', value)
             if key == 'medium': # access the link to the image of the jacket of the book (a syndetics link)
-                jacket = value
+                image = value
                 print('jacket image:',value)
 
             # checks if all values above have been filled, if all are not full, it will return an empty list
             # therefore the list will either be full of all needed values or totally empty
             # used to stop loop once all required values have been caught, then allows to save those  values before  resetting variables for the next run
             #     Otherwise you would only be left with the values at the very last discovery as each value will get overwritten as it loops
-            materials = storeData(form, author, title, subtitle, description, date)
+            materials = storeData(form, author, title, subtitle, description, date, image)
 
             # determine if list from storeData is a book, video etc. and store in ID
 
@@ -775,7 +784,7 @@ def programFlow(searchTerms, numOfResultPages):
                 # This will catch the constellation of values for the first item in the results and then stop, and
                 # append that object to the list
 
-                listOfItemObjects.append(LibItem(form, author, title, subtitle, description, date))
+                listOfItemObjects.append(LibItem(form, author, title, subtitle, description, date, image))
 
                 form = 1
                 author = 1
@@ -783,6 +792,7 @@ def programFlow(searchTerms, numOfResultPages):
                 subtitle = 1
                 description = 1
                 date = 1
+                image = 1
 
         c += 1
     return listOfItemObjects  # a list with two tuples [(),()]. Each tuple contains lists of its books... of its search
