@@ -2,6 +2,8 @@ import urllib.request, urllib.parse, urllib.error
 from bs4 import BeautifulSoup #import beautifulsoup4, not beautifulsoup
 from tkinter import *
 from tkinter import ttk
+from PIL import Image, ImageTk
+from io import BytesIO
 import json
 import ssl
 
@@ -106,6 +108,8 @@ import ssl
 # 52. Ver. 3.52, rather major addition to LibItem Class. It now automatically runs a new method in the init (saveImage()) which calls the link of the image
 # and saves that to a variable. (This seems to slow down the search results quite noticably).
 
+# 53. Images now show on left side of book column
+
 ###### Fundamental Program Flow ##########
 
 ### Key Point: getSearchTerms() returns the search results as a list of classes ###
@@ -126,7 +130,7 @@ class LibItem:
         self.description = description
         self.pubDate = date
         self.imageLink = image # the link, URL, to the image of the book (or item)
-        self.imgData = 0
+        self.image = 0 # initialize to a value; this will take the image data itself once saveImage() is run
         self.saveImage()
 
 
@@ -173,6 +177,10 @@ class LibItem:
         else:
             return self.imageLink
 
+    def getImage(self):
+        # returns the actual image for displaying
+        return self.image
+
     def saveImage(self):
         '''
         This method which is called automatically when each LibItem class is instantiated will load the data
@@ -180,15 +188,41 @@ class LibItem:
         webpage holding the iamge and then saves the data
         '''
 
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
+        # turning off the ctx stuff seems to speed up the fetching noticeably
+
+        # ctx = ssl.create_default_context()
+        # ctx.check_hostname = False
+        # ctx.verify_mode = ssl.CERT_NONE
 
         # Fetch the image
-        try: # if the item has no link connected with it, the urllib function will throw an error, therefore handle the error as a pass
-            self.imgData = urllib.request.urlopen(self.getImageLink(), context=ctx).read()
+        try:  # if the item has no link connected with it, the urllib function will throw an error, therefore handle the error as a pass
+
+            # Use urllib to fetch the image
+            with urllib.request.urlopen(self.getImageLink()) as response:
+                imgData = response.read()  # Read the image data from the URL
+
+            # Open the image using Pillow
+            openedImage = Image.open(BytesIO(imgData))
+
+            originalWidth, originalHeight = openedImage.size
+
+            # Calculate new dimensions while keeping the aspect ratio
+            newWidth = 75  # Example new width
+            aspectRatio = originalHeight / originalWidth
+            newHeight = int(newWidth * aspectRatio)
+
+            # Resize with the calculated dimensions
+            resizedImage = openedImage.resize((newWidth, newHeight))
+
+
+            # Convert the image to a format that Tkinter can display
+            self.image = ImageTk.PhotoImage(resizedImage)
+
         except:
             pass
+
+
+
 
 
 # Main() --> Mainwindow --> self.bindings() method --> self.getSearchTerms() --> mainprogram() --> ProgramFlow() --> returns results to mainProgram()
@@ -452,9 +486,14 @@ class MainWindow:
         self.resultsCache.append(results)
 
     def updateResults(self, results):
+        '''
+        This method displays the items to the interface
+        inputs: results: a list of LibItem objects each object containing all the information needed about each library item
 
+        '''
         for instance in results:
             if instance.getFormat() == 'BK':
+
                 # build the string of text stage by stage, then insert the string into a label:
                 posting = 'BOOK' + ' '  # switch 'BK' for full term "BOOK"
 
@@ -465,7 +504,7 @@ class MainWindow:
                 if instance.getSubTitle() != '':  # Inserts a colon when needed for a the subtite
                     posting = posting + instance.getTitle() + ':' + ' '
                 else:
-                    posting = posting + instance.getTitle() + ' '
+                    posting = posting + instance.getTitle() + ' ' + '\n'
 
                 if instance.getSubTitle() != '':
                     posting = posting + instance.getSubTitle() + '\n'
@@ -476,12 +515,16 @@ class MainWindow:
                 posting = posting + instance.getPubDate()
                 posting = posting + '\n\n'  # puts empty line between each library item
 
-                # create a label with all of the information about the item
-                label = Label(self.frame1, text=posting, anchor='w', justify='left', font=(self.fontTuple[0],self.fontTuple[1]), fg="white",bg='#112233')
+                # create a label with all of the information about the item (the text built above, and the image if one is available)
+                if instance.getImage()==0: # if image is set to 0 (no image saved) do not load the label with an image
+                    label = Label(self.frame1, text=posting, anchor='w', justify='left', font=(self.fontTuple[0], self.fontTuple[1]), fg="white", bg='#112233')
+                    print('0 was found for iamge')
+                else: # if the image variable contains an image, load label with image
+                    label = Label(self.frame1, text=posting, anchor='w', justify='left', compound="left", image=instance.getImage(), pady=10, padx=5, font=(self.fontTuple[0],self.fontTuple[1]), fg="white",bg='#112233')
                 label.pack(side='top', fill='x') # side=top packs labels vertically; fill=x fills unused space.
 
-                label.bind("<Enter>", self.mouseOver)
-                label.bind("<Leave>", self.mouseOff)
+                label.bind("<Enter>", self.mouseOver) # call mouseOver function when the mouse moves over the label
+                label.bind("<Leave>", self.mouseOff) # call mouseOff func when mouse moves off
 
             if instance.getFormat() == 'DVD':
                 self.text2.insert('end', 'DVD' + ' ')
@@ -627,7 +670,7 @@ def accessEntitiesKey(dictionary):
     for (k, v) in dictionary.items():
         if k == 'entities':  # enter "entities" key
             entities = {k: v}
-            # print(entities)
+            print(entities)
     return entities
 
 
