@@ -230,6 +230,7 @@ class LibItem:
 
 # Main() --> Mainwindow --> self.bindings() method --> self.getSearchTerms() --> mainprogram() --> ProgramFlow() --> returns results to mainProgram()
 class MainWindow:
+
     def __init__(self, master):
         # Caching search terms given by the user. Used for populating the search history menu
         self.searchTermsCache = []
@@ -299,10 +300,10 @@ class MainWindow:
         # Search Bar
         self.frame = ttk.Frame(self.master)
         self.label = ttk.Label(self.frame, text="Search:", font=self.fontTuple)
-        self.label.grid(row='0', column=0)
+        self.label.grid(row=0, column=0)
         self.frame.grid(row=0, column=1, columnspan=2)
         self.frame.config(relief=RIDGE)
-        self.entry = ttk.Entry(self.frame, width='100', font=self.fontTuple)
+        self.entry = ttk.Entry(self.frame, width=100, font=self.fontTuple)
         self.entry.grid(row=0, column=1)
 
         # Instantiate frames
@@ -312,21 +313,40 @@ class MainWindow:
         self.frame4 = Frame(self.master)
 
         # Add canvas ontop of the frames (so as to be able to add a scroll bar)
-        self.canvas1 = Canvas(self.frame1)
+        self.canvas1 = Canvas(self.frame1, bg='#112233')
+        self.canvas2 = Canvas(self.frame2, bg='#112233')
+        self.canvas3 = Canvas(self.frame3, bg='#112233')
+        self.canvas4 = Canvas(self.frame4, bg='#112233')
+
+        # pack the canvases
         self.canvas1.pack(side=LEFT, fill=BOTH, expand=True)
+        self.canvas2.pack(side=LEFT, fill=BOTH, expand=True)
+        self.canvas3.pack(side=LEFT, fill=BOTH, expand=True)
+        self.canvas4.pack(side=LEFT, fill=BOTH, expand=True)
+
+        # Add labelFrames on top of the canvas to hold all of the labels
+        self.labelFrame1 = Frame(self.canvas1, bg='#112233')
+        self.labelFrame2 = Frame(self.canvas2, bg='#112233')
+        self.labelFrame3 = Frame(self.canvas3, bg='#112233')
+        self.labelFrame4 = Frame(self.canvas4, bg='#112233')
+
+        # Pack labelFrames
+        self.labelFrame1.pack(side=LEFT, fill=BOTH, expand=True)
+        self.labelFrame2.pack(side=LEFT, fill=BOTH, expand=True)
+        self.labelFrame3.pack(side=LEFT, fill=BOTH, expand=True)
+        self.labelFrame4.pack(side=LEFT, fill=BOTH, expand=True)
+
 
         # creating and placing scrollbar
-        scrollbar = Scrollbar(self.frame1, orient="vertical", command=self.canvas1.yview)
-        scrollbar2 = Scrollbar(self.frame2, orient='vertical')
-        scrollbar3 = Scrollbar(self.frame3, orient='vertical')
-        scrollbar4 = Scrollbar(self.frame4, orient='vertical')
-        scrollbar.pack(side=RIGHT, fill=Y)
+        scrollbar1 = Scrollbar(self.frame1, orient="vertical", command=self.canvas1.yview)
+        scrollbar2 = Scrollbar(self.frame2, orient="vertical", command=self.canvas2.yview)
+        scrollbar3 = Scrollbar(self.frame3, orient="vertical", command=self.canvas3.yview)
+        scrollbar4 = Scrollbar(self.frame4, orient="vertical", command=self.canvas4.yview)
+
+        scrollbar1.pack(side=RIGHT, fill=Y)
         scrollbar2.pack(side=RIGHT, fill=Y)
         scrollbar3.pack(side=RIGHT, fill=Y)
         scrollbar4.pack(side=RIGHT, fill=Y)
-
-        # Configure the canvas to use the scrollbar
-        self.canvas1.configure(yscrollcommand=scrollbar.set)
 
         # Create a Frame to hold the Labels (single container for all labels)
         self.labelFrame = Frame(self.canvas1)
@@ -346,33 +366,11 @@ class MainWindow:
         self.master.grid_rowconfigure(0, weight=0)  # To leave the first row (for search bar, etc.) unaffected.
         self.master.grid_rowconfigure(1, weight=1)  # This makes the content rows take up the available height.
 
-        # Set up text boxes
-        self.text2 = Text(self.frame2, bg='#112233', fg='white', font=self.fontTuple, yscrollcommand=scrollbar2.set)
-        self.text2.insert(INSERT, '')
-        self.text2.grid_columnconfigure(0, weight=1)
-        self.text2.grid_rowconfigure(0, weight=1)
-        self.text2.config(wrap='word')
-        self.text2.pack(expand=True, fill=BOTH)
-
-        self.text3 = Text(self.frame3, bg='#112233', fg='white', font=self.fontTuple, yscrollcommand=scrollbar3.set)
-        self.text3.insert(INSERT, '')
-        self.text3.grid_columnconfigure(0, weight=1)
-        self.text3.grid_rowconfigure(0, weight=1)
-        self.text3.config(wrap='word')
-        self.text3.pack(expand=True, fill=BOTH)
-
-        self.text4 = Text(self.frame4, bg='#112233', fg='white', font=self.fontTuple, yscrollcommand=scrollbar4.set)
-        self.text4.insert(INSERT, '')
-        self.text4.grid_columnconfigure(0, weight=1)
-        self.text4.grid_rowconfigure(0, weight=1)
-        self.text4.config(wrap='word')
-        self.text4.pack(expand=True, fill=BOTH)
-
         # Scrollbar binding
-        scrollbar.config(command=self.canvas1.yview)
-        scrollbar2.config(command=self.text2.yview)
-        scrollbar3.config(command=self.text3.yview)
-        scrollbar4.config(command=self.text4.yview)
+        self.canvas1.configure(yscrollcommand=scrollbar1.set)
+        self.canvas2.configure(yscrollcommand=scrollbar2.set)
+        self.canvas3.configure(yscrollcommand=scrollbar3.set)
+        self.canvas4.configure(yscrollcommand=scrollbar4.set)
 
         # Main function listens for entry of search terms and initiates main program
         self.bindings(self.master)  # the bindings() function initiates the whole program flow by checking if the return key
