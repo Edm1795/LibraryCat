@@ -137,6 +137,8 @@ import ssl
 #57.
 # Fixed history function; updated so that it works on scrollable frames
 
+#58.
+# Rebuilt LibItem() and parsing of JSON data from website
 ###### Fundamental Program Flow ##########
 
 ### Key Point: getSearchTerms() returns the search results as a list of classes ###
